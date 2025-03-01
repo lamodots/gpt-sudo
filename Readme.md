@@ -1,6 +1,7 @@
 ### About GPT-SUDO
 
-**gpt-sudo** – A customizable AI chatbot powered by OpenAI, giving users control over model selection and chat behavior.
+**gpt-sudo** – A customizable AI chatbot powered by OpenAI and Google Gimini, giving users control over model selection and chat behavior.
+<img src="./Capture.PNG">
 
 ### Description
 
@@ -11,3 +12,23 @@
 ✅ Explore AI engineering with fine-tuned parameters
 
 This project is a deep dive into AI engineering and customization, pushing the boundaries of interactive AI experiences. 🚀
+
+## Starting application
+
+```batch
+// Install dependencies
+run npm install
+
+```
+
+```batch
+//set up environment variable, your Google Gimini API key
+GIMINI_KEY =
+
+```
+
+```batch
+//start server
+node server.js --watch
+
+```
