@@ -1,25 +1,96 @@
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
 import './App.css';
 import './normal.css';
+import Avater from './Avater';
 
 function App() {
+	useEffect(() => {
+		getModels();
+	}, []);
+	const [input, setInput] = useState('');
+	const [chatLog, setChatLog] = useState([
+		{
+			user: 'gpt',
+			message: 'How can i help you today?',
+		},
+		// {
+		// 	user: 'me',
+		// 	message: 'I want to use chatGPT',
+		// },
+	]);
+	const [models, setModels] = useState([]);
+	const [selectModel, setSelectModel] = useState('gemini-1.5-flash');
+	console.log(selectModel);
+	//clear chat
+	function clearChats() {
+		setChatLog([]);
+	}
+
+	// get all models
+	async function getModels() {
+		const res = await fetch('http://localhost:3080/models');
+		const data = await res.json();
+
+		setModels(data.data.models);
+	}
+	async function handleSubmit(e) {
+		e.preventDefault();
+		// grab input and set it to chatLog
+		let chatLogNew = [...chatLog, { user: 'Wisdom', message: `${input}` }];
+		//when we do a submittion whenat the input to be set o notting
+		setInput('');
+		setChatLog(chatLogNew);
+		/*FETCH RESPONSE FROM API COMBINING THE CHATLOG ARRAY OF MESSAGES AND SENIDNG IT AS A MESSAGE
+		SENDING IT TO LOCAL HOST AS A POST.
+		*/
+		const messages = chatLogNew.map((message) => message.message).join('\n');
+		const res = await fetch('http://localhost:3080/', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				message: messages,
+				currentModel: selectModel,
+			}),
+		});
+		const data = await res.json();
+		setChatLog([...chatLogNew, { user: 'gpt', message: `${data.message}` }]);
+		console.log(data.message);
+	}
 	return (
 		<div className='app'>
 			<aside className='sidemenu'>
-				<div className='side-menu-button'>
+				<div className='side-menu-button' onClick={clearChats}>
 					<span>+</span>New chat
 				</div>
+
+				<select
+					value={selectModel}
+					onChange={(e) => setSelectModel(e.target.value)}
+				>
+					{models.map((model, index) => {
+						const modelName = model.name.split('/')[1];
+						return (
+							<option key={index} value={modelName}>
+								{model?.name}
+							</option>
+						);
+					})}
+				</select>
 			</aside>
 			<section className='chatbox'>
 				<div className='chat-log'>
-					<div className='chat-message'>
+					{chatLog.map((message, index) => (
+						<ChatMessage key={index} message={message} />
+					))}
+					{/* <div className='chat-message'>
 						<div className='chat-message-center'>
 							<div className='avatar'>me</div>
 							<div className='message'>Hello world</div>
 						</div>
-					</div>
-					<div className='chat-message gpt-sudo'>
+					</div> */}
+					{/* <div className='chat-message gpt-sudo'>
 						<div className='chat-message-center'>
 							<div className='avatar gpt-sudo'>
 								<svg
@@ -53,10 +124,18 @@ function App() {
 							</div>
 							<div className='message'>I am sudo AI</div>
 						</div>
-					</div>
+					</div> */}
 				</div>
 				<div className='chat-input-holder'>
-					<textarea className='chat-input-textarea' rows='1'></textarea>
+					<form onSubmit={handleSubmit}>
+						<input
+							className='chat-input-textarea'
+							rows='1'
+							value={input}
+							onChange={(e) => setInput(e.target.value)}
+						></input>
+					</form>
+					{/* <textarea className='chat-input-textarea' rows='1'></textarea> */}
 					{/* <p>ChatGPT can make mistakes. Check important info.</p> */}
 				</div>
 			</section>
@@ -64,4 +143,18 @@ function App() {
 	);
 }
 
+function ChatMessage({ message }) {
+	return (
+		<>
+			<div className={`chat-message ${message?.user == 'gpt' && 'gpt-sudo'}`}>
+				<div className='chat-message-center'>
+					<div className={`avatar ${message?.user == 'gpt' && 'gpt-sudo'}`}>
+						{message?.user == 'gpt' && <Avater />}
+					</div>
+					<div className='message'>{message?.message}</div>
+				</div>
+			</div>
+		</>
+	);
+}
 export default App;

@@ -14,11 +14,18 @@
 
 	background-color: #202123;
 }
+.sidemenu select {
+	margin-top: 24px;
+	width: 100%;
+	padding: 10px;
+	position: relative;
+}
 
 .chatbox {
 	flex: 1;
 	position: relative;
 	background-color: #343541;
+	overflow-y: auto;
 }
 
 .chat-log {
